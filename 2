@@ -1,15 +1,11 @@
 #!/bin/bash
-
 set -e
 sudo chmod 755 *
 mkdir -p $HOME/bin
-SCRIPTS=('pr_split')
-
-for SCRIPT in ${SCRIPTS[*]}
+for filename in pr_split.py
 do
-    rm -f $HOME/bin/$SCRIPT
-    rm -f $HOME/bin/$SCRIPT.py
-    cp $SCRIPT.py $HOME/bin/$SCRIPT
+    rm -f $HOME/bin/$filename
+    cp $filename $HOME/bin
 done
 
 if [ -z "$(grep '$HOME/bin' $HOME/.bashrc)" ]; then
