@@ -2,7 +2,7 @@
 # Author: Pye Douglas
 # Data: 2019.5.30
 # Description: This script is used for spliting your giant pr/mr into several small pr/mr.
-# Usage: 
+# Usage:
 # 1. run install.sh
 # 2. cd into your repo, checkout your branch that you want to push and merge, then python3 pr_split.py <target_merge_base>
 
@@ -100,6 +100,12 @@ def split_commits(base, n_line_threshold=NUM_LINE_THRESHOLD):
             consume_commit_count += 1
             line_insertion_count += get_changed_line_count(base)
             if line_insertion_count >= 500:
+                if consume_commit_count > 1:
+                    # more than 1 commit, then reset to last commit
+                    assert 0 == subprocess.call(
+                        "git reset HEAD^ --hard", shell=True
+                    ), "Reset back failed"
+                    consume_commit_count -= 1
                 break
 
         # rename the branch
