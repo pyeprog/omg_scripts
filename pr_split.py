@@ -15,8 +15,6 @@ import os
 import sys
 import subprocess
 
-NUM_LINE_THRESHOLD = 500
-
 
 def is_git_available():
     return 0 == subprocess.call("git branch -a", shell=True)
@@ -73,7 +71,7 @@ def delete_branch(branch):
     return True
 
 
-def split_commits(base, n_line_threshold=NUM_LINE_THRESHOLD):
+def split_commits(base, n_line_threshold):
     cur_branch_name = get_cur_branch_name().strip()
     # align base branch with origin
     assert sync_branch_with_origin(base), "Branch sync failed"
@@ -99,7 +97,7 @@ def split_commits(base, n_line_threshold=NUM_LINE_THRESHOLD):
             print("commit {} merged".format(commit))
             consume_commit_count += 1
             line_insertion_count += get_changed_line_count(base)
-            if line_insertion_count >= 500:
+            if line_insertion_count >= n_line_threshold:
                 if consume_commit_count > 1:
                     # more than 1 commit, then reset to last commit
                     assert 0 == subprocess.call(
@@ -152,7 +150,9 @@ if __name__ == "__main__":
         type=str,
         help="the target branch you want to merge into",
     )
+    parser.add_argument("--per", nargs="?", const=500, type=int)
     args = parser.parse_args()
 
     target_branch = args.target_branch
-    sys.exit(split_commits(base=target_branch))
+    split_per = 500 if args.per is None else args.per
+    sys.exit(split_commits(base=target_branch, n_line_threshold=split_per))
