@@ -1,6 +1,10 @@
 # tool scripts that might help
 
 ## pr_split
+Prerequisites:
+1. bash
+2. python3
+
 Usage:
 1. First run the install.sh, `bash install.sh` or `./install.sh`. 
 2. cd to your repo
