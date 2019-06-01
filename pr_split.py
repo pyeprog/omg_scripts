@@ -27,12 +27,15 @@ def fetch():
 def get_new_commit_list(from_, to_):
     # from oldest to latest
     return (
-        os.popen("git rev-list origin/{}..{}".format(from_, to_)).read().split()[::-1]
+        os.popen("git rev-list {}..{}".format(from_, to_)).read().split()[::-1]
     )
 
 
 def get_cur_branch_name():
-    return os.popen("git branch -a | grep '*' | cut -c3-").read()
+    branch_name = os.popen("git branch -a | grep '*' | cut -c3-").read()
+    if branch_name.startswith("origin/"):
+        branch_name = branch_name[7:]
+    return branch_name
 
 
 def get_changed_line_count(base):
@@ -91,11 +94,11 @@ def split_commits(base, n_line_threshold):
         consume_commit_count = 0
         print("Total commit number: {}".format(len(commit_list)))
         for commit in commit_list:
-            assert 0 == subprocess.call(
-                "git cherry-pick {}".format(commit), shell=True
-            ), "Cherry pick commit {} failed".format(commit)
-            print("commit {} merged".format(commit))
             consume_commit_count += 1
+            subprocess.call(
+                "git cherry-pick {} --allow-empty".format(commit), shell=True
+            )
+            print("commit {} merged".format(commit))
             line_insertion_count += get_changed_line_count(base)
             if line_insertion_count >= n_line_threshold:
                 if consume_commit_count > 1:
