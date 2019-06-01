@@ -38,12 +38,14 @@ def get_cur_branch_name():
     return branch_name
 
 
-def get_changed_line_count(base):
+def get_changed_line_count(base, branch):
     extract_num = lambda info_str: info_str.split()[0]
     stat_result = (
-        os.popen("git diff --stat origin/{}..HEAD".format(base)).read().split("\n")[-2]
+        os.popen("git diff --stat {}..{}".format(base, branch)).read().split("\n")
     )
-    str_info_list = stat_result.split(",")
+    if len(stat_result) == 1 and stat_result[0] == '':
+        return 0  # means no difference
+    str_info_list = stat_result[-2].split(",")
     for str_info in str_info_list:
         if "insert" in str_info.lower():
             insertion_line_count = extract_num(str_info)
@@ -65,7 +67,7 @@ def sync_branch_with_origin(branch):
 
 
 def is_branch_exist(branch):
-    return len(os.popen("git branch -a | grep {}".format(branch)).read().strip()) > 0
+    return len(os.popen("git branch -a | grep '^[\* ] {}'".format(branch)).read().strip()) > 0
 
 
 def delete_branch(branch):
@@ -74,70 +76,61 @@ def delete_branch(branch):
     return True
 
 
+def checkout_and_push(checkout_branch_name, push_branch_name):
+    return (
+        0 == subprocess.call(
+            "git checkout -b {} {} && git push origin {}".format(
+                push_branch_name, checkout_branch_name, push_branch_name), shell=True))
+
+
 def split_commits(base, n_line_threshold):
     cur_branch_name = get_cur_branch_name().strip()
     # align base branch with origin
     assert sync_branch_with_origin(base), "Branch sync failed"
-
-    # those branches that should be deleted after push the commits
-    delete_target_branches = []
+    commit_list = get_new_commit_list(from_=base, to_=cur_branch_name)
+    index = 0
     try:
-        # create temp branch
-        tmp_branch_name = cur_branch_name + "_tmp"
-        delete_target_branches.append(tmp_branch_name)
-        assert 0 == subprocess.call(
-            "git checkout -b {} {}".format(tmp_branch_name, base), shell=True
-        ), "Creating branch failed"
+        while index < len(commit_list):
+            insertion_cumulation = 0
+            commit_count = 0
+            for i in range(index, len(commit_list)):
+                if i == 0:
+                    last_commit = base
+                else:
+                    last_commit = commit_list[i - 1]
+                insertion_cumulation += get_changed_line_count(last_commit, commit_list[i])
+                commit_count += 1
+                if i == len(commit_list) - 1:
+                    index = len(commit_list)
+                    assert checkout_and_push(
+                        commit_list[i], "{}_{}/{}".format(
+                            cur_branch_name, i + 1, len(commit_list))), "checkout and push failed"
+                    break
+                if insertion_cumulation > n_line_threshold:
+                    if commit_count > 1:
+                        # new round start from i
+                        index = i
+                    else:
+                        # new round start from i + 1
+                        index = i + 1
+                    assert checkout_and_push(
+                        commit_list[index - 1], "{}_{}/{}".format(
+                            cur_branch_name, index + 1, len(commit_list))), "checkout and push failed"
+                    break
 
-        commit_list = get_new_commit_list(from_=base, to_=cur_branch_name)
-        line_insertion_count = 0
-        consume_commit_count = 0
-        print("Total commit number: {}".format(len(commit_list)))
-        for commit in commit_list:
-            consume_commit_count += 1
-            subprocess.call(
-                "git cherry-pick {} --allow-empty".format(commit), shell=True
-            )
-            print("commit {} merged".format(commit))
-            line_insertion_count += get_changed_line_count(base)
-            if line_insertion_count >= n_line_threshold:
-                if consume_commit_count > 1:
-                    # more than 1 commit, then reset to last commit
-                    assert 0 == subprocess.call(
-                        "git reset HEAD^ --hard", shell=True
-                    ), "Reset back failed"
-                    consume_commit_count -= 1
-                break
-
-        # rename the branch
-        expected_branch_name = cur_branch_name + "_{}_commit_remained".format(
-            len(commit_list) - consume_commit_count
-        )
-        delete_target_branches.append(expected_branch_name)
-        assert 0 == subprocess.call(
-            "git branch -m {}".format(expected_branch_name), shell=True
-        ), "branch rename failed"
-
-        # push the branch to origin
-        assert 0 == subprocess.call(
-            "git push origin {}".format(expected_branch_name), shell=True
-        ), "push to origin failed"
-
-        # checkout origin branch
-        assert 0 == subprocess.call(
-            "git checkout {}".format(cur_branch_name), shell=True
-        ), "back to origin branch failed"
     except Exception as e:
         print(str(e))
         assert 0 == subprocess.call(
-            "git checkout {}".format(cur_branch_name), shell=True
-        ), "Fatal error: cannot recover context"
-        # recover branch
-        assert all(
-            [delete_branch(branch) for branch in delete_target_branches]
-        ), "Fatal error: cannot delete temp or sub pr/mr branches"
+                "git checkout {} -f".format(cur_branch_name), shell=True
+                ), "Fatal error: checkout back to {} failed".format(cur_branch_name)
+        assert 0 == subprocess.call(
+            "git branch -a | grep '^  {}'".format(cur_branch_name + "_") + " | xargs -I {} git branch -D {}",
+            shell=True), "Fatal error: recovery failed"
         return 1  # fail status
     print("All done!")
+    assert 0 == subprocess.call(
+            "git checkout {} -f".format(cur_branch_name), shell=True
+            ), "Fatal error: checkout back to {} failed".format(cur_branch_name)
     return 0  # success status
 
 
