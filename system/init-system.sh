@@ -1,11 +1,11 @@
 #!/bin/bash
 
-set -x  # debug
+# set -x  # debug
 set -e
 
 # Distro
 distro=$(hostnamectl | sed 's/^ *//' | grep 'Operating System' | cut -d ' ' -f3)
-if [ distro -ne 'CentOS' ]; then
+if [[ distro -ne 'CentOS' ]]; then
     echo "Your distro is not centos"
     exit 1
 fi
@@ -33,7 +33,19 @@ function initSystem() {
     # sshd
     sudo sed -ie 's/#ClientAliveInterval.*$/ClientAliveInterval 3/' /etc/ssh/sshd_config
     sudo sed -ie 's/#ClientAliveCountMax.*$/ClientAliveCountMax 3600/' /etc/ssh/sshd_config
+    if [[ -z $(sudo grep 'DenyUsers root' /etc/ssh/sshd_config) ]]; then
+        sudo echo 'DenyUsers root' | sudo tee -a /etc/ssh/sshd_config
+	sudo sed -ie 's/PermitRootLogin.*$/PermitRootLogin no/' /etc/ssh/sshd_config
+    fi
+    sudo sed -ie 's/#Port 22/Port 4123/' /etc/ssh/sshd_config
+    sudo semanage port -a -t ssh_port_t -p tcp 4123
     sudo service sshd restart
+
+    # network config
+    iptables -A INPUT -p tcp --dport 21 -j DROP
+    iptables -A INPUT -p tcp --dport 22 -j DROP
+    iptables-save
+    echo 'Remeber to config aliyun port on its website'
 }
 
 # vim
@@ -74,19 +86,15 @@ case $1 in
         else
             echo "specify user name"
         fi
-        break
         ;;
     system)
         initSystem
-        break
         ;;
     tool)
         initTools
-        break
         ;;
     vim)
         initVim
-        break
         ;;
     *)
         echo "available: user system tool vim"
