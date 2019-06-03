@@ -64,6 +64,16 @@ function initVim() {
     vim +PluginInstall +qa
 }
 
+# jenkins
+function initJenkins() {
+    sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat/jenkins.repo
+    sudo rpm --import https://pkg.jenkins.io/redhat/jenkins.io.key
+    sudo yum install java-11-openjdk -y
+    sudo yum install jenkins -y
+    sudo systemctl start jenkins
+    sudo systemctl enable jenkins
+}
+
 # Tools
 function initTools() {
     showline init tools
@@ -74,6 +84,7 @@ function initTools() {
     sudo yum install docker -y
     sudo systemctl start docker
     initVim && echo "init vim done"
+    initJenkins && echo "init jenkins"
 
     showline init done
 }
@@ -96,6 +107,9 @@ case $1 in
     vim)
         initVim
         ;;
+    jenkins)
+        initJenkins
+        ;;
     *)
-        echo "available: user system tool vim"
+        echo "available: user system tool vim jenkins"
 esac

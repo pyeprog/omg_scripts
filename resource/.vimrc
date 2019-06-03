@@ -66,7 +66,7 @@ let g:EasyMotion_smartcase=1
 let g:EasyMotion_startofline=1
 nmap <Leader><Leader>s <Plug>(easymotion-s)
 
-" Black
+" Code format
 nmap <Leader>== :FormatCode<CR>
 
 " Jedi
@@ -79,7 +79,7 @@ let g:jedi#auto_vim_configuration = 0
 set completeopt=menuone,longest
 
 " Custom
-nnoremap <left> :bp<cr>
-nnoremap <right> :bn<cr>
-nnoremap <up> :tabp<cr>
-nnoremap <down> :tabn<cr>
+nnoremap <up> :bp<cr>
+nnoremap <down> :bn<cr>
+nnoremap <left> :tabp<cr>
+nnoremap <right> :tabn<cr>
