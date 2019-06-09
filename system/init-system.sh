@@ -74,6 +74,15 @@ function initJenkins() {
     sudo systemctl enable jenkins
 }
 
+# nginx
+function initNginx() {
+    sudo yum install nginx -y
+    sudo mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.back
+    sudo cp ../resource/nginx.conf /etc/nginx
+    sudo systemctl start nginx
+    sudo systemctl enable nginx
+}
+
 # Tools
 function initTools() {
     showline init tools
@@ -109,6 +118,9 @@ case $1 in
         ;;
     jenkins)
         initJenkins
+        ;;
+    nginx)
+        initNginx
         ;;
     *)
         echo "available: user system tool vim jenkins"
