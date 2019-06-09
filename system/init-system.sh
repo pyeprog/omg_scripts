@@ -93,8 +93,9 @@ function initTools() {
     sudo yum install golang -y
     sudo yum install docker -y
     sudo systemctl start docker
-    initVim && echo "init vim done"
-    initJenkins && echo "init jenkins"
+    initVim && echo 'init vim done'
+    initJenkins && echo 'init jenkins'
+    initNginx && echo 'init nginx'
 
     showline init done
 }
