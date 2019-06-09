@@ -78,6 +78,7 @@ function initJenkins() {
 function initNginx() {
     sudo yum install nginx -y
     sudo mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.back
+    sudo mkdir -p /var/log/nginx/jenkins
     sudo cp ../resource/nginx.conf /etc/nginx
     sudo systemctl start nginx
     sudo systemctl enable nginx
