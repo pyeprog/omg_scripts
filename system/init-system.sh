@@ -41,7 +41,7 @@ function initSystem() {
     sudo sed -ie 's/#ClientAliveCountMax.*$/ClientAliveCountMax 3600/' /etc/ssh/sshd_config
     if [[ -z $(sudo grep 'DenyUsers root' /etc/ssh/sshd_config) ]]; then
         echo 'DenyUsers root' | sudo tee -a /etc/ssh/sshd_config
-	sudo sed -ie 's/PermitRootLogin.*$/PermitRootLogin no/' /etc/ssh/sshd_config
+        sudo sed -ie 's/PermitRootLogin.*$/PermitRootLogin no/' /etc/ssh/sshd_config
     fi
     sudo sed -ie 's/#Port 22/Port 4123/' /etc/ssh/sshd_config
     sudo semanage port -a -t ssh_port_t -p tcp 4123
