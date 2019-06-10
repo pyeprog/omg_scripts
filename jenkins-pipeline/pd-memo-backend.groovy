@@ -19,6 +19,8 @@ node {
     stage('deploy') {
         withCredentials([string(credentialsId: 'dockerhub_password', variable: 'jenkinsPassword')]) {
             sshagent(['pd64ssh']) {
+                sh "echo ${jenkinsPassword} | sudo -S docker stop pd-memo || true && docker rm pd-memo || true"
+                sh "echo ${jenkinsPassword} | sudo -S docker rmi pd-memo-backend || true"
                 sh "echo ${jenkinsPassword} | sudo -S docker run --rm -p 8081:8080 -d --name pd-memo pyeprog/pd-memo-backend"
             }
         }
