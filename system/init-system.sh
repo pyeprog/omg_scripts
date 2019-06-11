@@ -108,6 +108,8 @@ function initNginx() {
     sudo mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.back
     sudo mkdir -p /var/log/nginx/jenkins
     sudo cp ../resource/nginx.conf /etc/nginx
+    mkdir -p /etc/nginx/conf.d/
+    sudo cp ../resource/jenkins.nginx.conf /etc/nginx/conf.d/
     sudo systemctl start nginx
     sudo systemctl enable nginx
 }
