@@ -7,7 +7,6 @@ call vundle#begin()
 Plugin 'VundleVim/Vundle.vim'
 
 Plugin 'scrooloose/nerdtree'
-Plugin 'pyeprog/oneTerminal'
 Plugin 'easymotion/vim-easymotion'
 Plugin 'ctrlpvim/ctrlp.vim'
 Plugin 'jiangmiao/auto-pairs'
@@ -16,13 +15,10 @@ Plugin 'tpope/vim-repeat'
 Plugin 'tpope/vim-commentary'
 Plugin 'unblevable/quick-scope'
 Plugin 'davidhalter/jedi-vim'
+Plugin 'vim-syntastic/syntastic'
+Plugin 'Chiel92/vim-autoformat'
 
-Plugin 'google/vim-maktaba'
-Plugin 'google/vim-codefmt'
-Plugin 'google/vim-glaive'"
 call vundle#end()            
-call glaive#Install()
-
 filetype plugin indent on  
 
 syntax on
@@ -38,6 +34,7 @@ set smarttab
 set expandtab
 set nowrap
 set hidden
+set textwidth=79
 
 colorscheme desert
 
@@ -66,8 +63,8 @@ let g:EasyMotion_smartcase=1
 let g:EasyMotion_startofline=1
 nmap <Leader><Leader>s <Plug>(easymotion-s)
 
-" Code format
-nmap <Leader>== :FormatCode<CR>
+" Autoformat
+nmap <Leader>== :Autoformat<CR>
 
 " Jedi
 let g:jedi#goto_command = "<C-]>"
@@ -79,7 +76,17 @@ let g:jedi#auto_vim_configuration = 0
 set completeopt=menuone,longest
 
 " Custom
-nnoremap <up> :bp<cr>
-nnoremap <down> :bn<cr>
-nnoremap <left> :tabp<cr>
-nnoremap <right> :tabn<cr>
+nnoremap <left> :bp<cr>
+nnoremap <right> :bn<cr>
+nnoremap <up> :tabp<cr>
+nnoremap <down> :tabn<cr>
+
+" Syntax
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 1
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 0
+let g:syntastic_python_checkers = ['flake8']
