@@ -8,13 +8,32 @@ class Finder:
         self.path_tree = self.setup_path_tree(self.root_path)
         self.path_fnode_dict = path_fnode_dict
 
-    def setup_path_tree(root_path):
-        # path_tree = defaultdict(list)
-        # for name in os.listdir(root_path):
-        #     if os.path.isfile(os.path.join(root_path, name)):
-        #         path_tree[root_path].appendkkk
-        pass
+    def setup_path_tree(self, root_path):
+        path_tree = defaultdict(defaultdict)
+        for full_name in os.listdir(root_path):
+            name = full_name.split(".")[0]
+            if os.path.isfile(os.path.join(root_path, full_name)):
+                path_tree[name] = os.path.join(root_path, full_name)
+            else:
+                path_tree[name] = self.setup_path_tree(
+                    os.path.join(root_path, full_name)
+                )
+        return path_tree
+
+    def fnode_by_import(self, import_content):
+        modules = import_content.split(".")
+        cur_level = self.path_tree
+        for module in modules:
+            if isinstance(cur_level, str):
+                break
+            if module not in cur_level:
+                break
+            cur_level = cur_level[module]
+        if not isinstance(cur_level, str):
+            return None
+        return self.path_fnode_dict.get(cur_level, None)
 
 
-    def fnode_by_import(import_content):
-        modules = import_content.split('.')
+if __name__ == "__main__":
+    finder = Finder("/home/pd/projects/backend", {})
+    print(finder.fnode_by_import("xkool_site.controller.residence_controller"))
