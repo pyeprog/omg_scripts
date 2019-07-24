@@ -19,6 +19,6 @@ class Query:
                         query_helper(parent_fnode.file_path, calling_item, seen, result)
             return result
 
-        result = Result()
+        result = Result(self.deps_tree.root_path)
         query_helper(module_path, class_or_func, set(), result)
         return result
