@@ -1,10 +1,16 @@
 import os
-import re
+from uuid import uuid4
+from typing import List
+
+from constant import postfix_mapping
+from parser import Parser
 
 
 class FNode:
     def __init__(self, file_path):
+        self.id = uuid4()
         self.file_path = file_path
+        self.parser = Parser(postfix_mapping[self.file_path.split(".")[-1]])
         self.content_lines = self.load(self.file_path)
         self.content_str = "\n".join(self.content_lines)
         self.parent_node_set = set()
@@ -34,55 +40,11 @@ class FNode:
     def add_child(self, node):
         self.children_node_set.add(node)
 
-    def parse_children_modules(self, content: str):
-        import_patterns = []
-        import_patterns.append(re.compile("import (.*)"))
-        import_patterns.append(re.compile("from (.*) import (.*)"))
-        modules = []
-        for line in self.content_lines:
-            for pattern in import_patterns:
-                match = re.match(pattern, line)
-                if match:
-                    groups = match.groups()
-                    if len(groups) > 1:  # pattern: from abc import Abc
-                        for module_name in groups[1].split(","):
-                            modules.append(
-                                ".".join([groups[0], module_name.strip()])
-                            )
-                    else:  # pattern: import Abc
-                        modules.append(groups[0])
-        return modules
+    def parse_children_modules(self, content_list: List[str]):
+        return self.parser.parse_children_modules(content_list)
 
-    def get_calling_func(self, child_fnode, child_class_of_func):
-        calling_func = None
-        if child_fnode in self.children_node_set:
-            pattern = re.compile(
-                "def (\w*?)\(.*?\):.*?{}".format(child_class_of_func),
-                re.DOTALL,
-            )
-            matches = re.findall(pattern, self.content_str)
-            if matches:
-                calling_func = matches[0]
-        return calling_func
+    def get_calling_func(self, child_fnode, child_class_or_func: str):
+        return self.parser.get_calling_func(self, child_fnode, child_class_or_func)
 
-    def get_calling_class(self, child_fnode, child_class_of_func):
-        calling_class = None
-        if child_fnode in self.children_node_set:
-            pattern = re.compile(
-                "class (\w*?):.*?{}".format(child_class_of_func),
-                re.DOTALL,
-            )
-            matches = re.findall(pattern, self.content_str)
-            if matches:
-                calling_class = matches[0]
-        return calling_class
-
-    def get_calling_class(self, child_fnode, child_class_of_func):
-
-        if __name__ == "__main__":
-            node = FNode(
-                (
-                    "//home/pd/projects/backend/"
-                    "xkool_site/controller/residence_controller.py"
-                )
-            )
+    def get_calling_class(self, child_fnode, child_class_or_func: str):
+        return self.parser.get_calling_class(self, child_fnode, child_class_or_func)
