@@ -15,13 +15,13 @@ Plugin 'tpope/vim-repeat'
 Plugin 'tpope/vim-commentary'
 Plugin 'unblevable/quick-scope'
 Plugin 'davidhalter/jedi-vim'
-Plugin 'vim-syntastic/syntastic'
 Plugin 'Chiel92/vim-autoformat'
 Plugin 'mileszs/ack.vim'
 Plugin 'sheerun/vim-polyglot'
+Plugin 'dense-analysis/ale'
 
-call vundle#end()            
-filetype plugin indent on  
+call vundle#end()
+filetype plugin indent on
 
 syntax on
 set nu
@@ -84,19 +84,19 @@ nnoremap <right> :bn<cr>
 nnoremap <up> :tabp<cr>
 nnoremap <down> :tabn<cr>
 
-" Syntax
-set statusline+=%#warningmsg#
-set statusline+=%{SyntasticStatuslineFlag()}
-set statusline+=%*
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 1
-let g:syntastic_check_on_open = 1
-let g:syntastic_check_on_wq = 0
-let g:syntastic_python_checkers = ['flake8']
-
 " Ack
 if executable('ag')
     let g:ackprg = 'ag --vimgrep'
 endif
 nnoremap <Leader>f :Ack<Space>
 let g:ack_autoclose=1
+
+" Ale
+let g:ale_fixers = {
+\   '*': ['remove_trailing_lines', 'trim_whitespace'],
+\   'javascript': ['eslint'],
+\   'python': ['flake8']
+\}
+let g:ale_echo_msg_error_str = 'E'
+let g:ale_echo_msg_warning_str = 'W'
+let g:ale_echo_msg_format = '[%linter%] %s [%severity%]'
