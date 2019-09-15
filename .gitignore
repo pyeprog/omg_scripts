@@ -119,3 +119,6 @@ tmp
 data/
 dump.rdb
 report.txt
+
+tags
+*.swp

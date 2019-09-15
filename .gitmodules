@@ -1,0 +1,3 @@
+[submodule "daily-tools/source_hunter"]
+	path = daily-tools/source_hunter
+	url = https://github.com/pyeprog/source_hunter.git
