@@ -91,9 +91,14 @@ function checkout() { # abbreivation for shortcut
 
 # }
 
-# function frontend_repo_handler() {
-
-# }
+function frontend_repo_handler() {
+    port=$(($1 + 4200))
+    if sed -n "/start:local_backend/p" package.json | grep -q "port"; then
+        echo "Port ${port} has been set."        
+    else
+        sed -i -e "/start:local_backend/s/\",$/ --port ${port}\",/" package.json      
+    fi
+}
 
 
 # function port() {
