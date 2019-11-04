@@ -4,12 +4,23 @@
 
 
 declare -A repos
-repos['backend']='git@git.xkool.org:xkool/backend.git'
-repos['algorithm']='git@git.xkool.org:xkool/algorithm.git'
-repos['test']='git@git.xkool.org:xkool/nothing.git'
-repos['frontend']='git@git.xkool.org:xkool/frontend.git'
-repos['new_task_center']='git@git.xkool.org:xkool/new_task_center.git'
-repos['frontend']='git@git.xkool.org:xkool/frontend.git'
+repos["light_exchange"]="git@git.xkool.org:chun/light_exchange.git"
+repos["frontend"]="git@git.xkool.org:xkool/frontend.git"
+repos["backend"]="git@git.xkool.org:xkool/backend.git"
+repos["algorithm"]="git@git.xkool.org:xkool/algorithm.git"
+repos["xkconfig"]="git@git.xkool.org:xkool/xkconfig.git"
+repos["ppt_service"]="git@git.xkool.org:xkool/ppt_service.git"
+repos["new_algorithm_residence"]="git@git.xkool.org:xkool/new_algorithm_residence.git"
+repos["new_algorithm_point_candidate"]="git@git.xkool.org:xkool/new_algorithm_point_candidate.git"
+repos["new_algorithm_measure"]="git@git.xkool.org:xkool/new_algorithm_measure.git"
+repos["solar_algorithm"]="git@git.xkool.org:xkool/solar_algorithm.git"
+repos["cad_processor"]="git@git.xkool.org:xkool/cad_processor.git"
+repos["shapely_extension"]="git@git.xkool.org:weilong/shapely_extension.git"
+repos["new_task_center"]="git@git.xkool.org:xkool/new_task_center.git"
+repos["xkadmin"]="git@git.xkool.org:xkool/xkadmin.git"
+repos["new_xkadmin"]="git@git.xkool.org:xkool/new_xkadmin.git"
+repos["xk_monitor_backend"]="git@git.xkool.org:xkool/xk_monitor_backend.git"
+repos["shapely_extension"]="git@git.xkool.org:weilong/shapely_extension.git"
 
 
 function clone() {
