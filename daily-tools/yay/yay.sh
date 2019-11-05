@@ -52,6 +52,36 @@ function clean() {
     done
 }
 
+function pull(){
+    local branch=${1-""}
+    local remote_repo="origin"
+    [ -z "$branch" ] && exit
+
+    local dir=${2-.}
+    cd "$dir" || exit
+
+    for repo in "${!repos[@]}"; do (
+        cd "$repo" > /dev/null 2>&1 || exit
+        git pull "$remote_repo" "$branch"
+        if [ -d '.git' ]; then
+            if git checkout "$branch" -f > /dev/null 2>&1; then
+                echo "[$repo] done"
+            else
+                echo "[$repo] fail"
+            fi
+            if [ -f '.gitmodules' ]; then
+                sed  -n '/path/p' '.gitmoduels' \
+                | cut -d ' ' -f 3 \
+                | while read -r submodule; do (
+                    cd "$submodule" > /dev/null 2>&1 || exit
+                    git pull "$remote_repo" "$branch"
+                )
+                done
+            fi
+        fi
+    )
+    done
+}
 
 function checkout() { # abbreivation for shortcut
     local branch=${1-""}
