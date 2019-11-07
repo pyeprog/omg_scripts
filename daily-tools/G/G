@@ -2,6 +2,7 @@
 
 # set -xeu
 
+host='10.0.0.105'
 
 declare -A repos
 repos["light_exchange"]="git@git.xkool.org:chun/light_exchange.git"
@@ -139,9 +140,15 @@ function checkout() { # abbreivation for shortcut
 function frontend_repo_handler() {
     port=$(($1 + 4200))
     if sed -n "/start:local_backend/p" package.json | grep -q "port"; then
-        echo "Port ${port} has been set."        
+        sed -i -E "/start:local_backend/s/--port *[0-9]+/--port ${port}/" package.json
     else
         sed -i -e "/start:local_backend/s/\",$/ --port ${port}\",/" package.json      
+    fi
+    # TODO: change local backend environment file
+    if $?; then
+        echo "[frontend] done"
+    else
+        echo "[frontend] fail"
     fi
 }
 
