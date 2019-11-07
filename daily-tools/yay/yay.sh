@@ -51,9 +51,9 @@ function pull(){
 
     for repo in "${!repos[@]}"; do (
         cd "$repo" > /dev/null 2>&1 || exit
-        git pull "$remote_repo" "$branch"
+        
         if [ -d '.git' ]; then
-            if git checkout "$branch" -f > /dev/null 2>&1; then
+            if git pull "$remote_repo" "$branch"; then
                 echo "[$repo] done"
             else
                 echo "[$repo] fail"
@@ -63,7 +63,11 @@ function pull(){
                 | cut -d ' ' -f 3 \
                 | while read -r submodule; do (
                     cd "$submodule" > /dev/null 2>&1 || exit
-                    git pull "$remote_repo" "$branch"
+                    if git pull "$remote_repo" "$branch"; then
+                        echo "[$repo] done"
+                    else
+                        echo "[$repo] fail"
+                    fi         
                 )
                 done
             fi
