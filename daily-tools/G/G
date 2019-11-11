@@ -122,23 +122,26 @@ function checkout() { # abbreivation for shortcut
     done
 }
 
+function new_task_center_repo_handler() {
 
-# function solar_repo_handler() {
+}
 
-# }
-
-
-# function new_repo_handler() {
-
-# }
-
-
-# function xkconfig_repo_handler() {
-
-# }
+function xkconfig_repo_handler() {
+    local algorithm_port=$((8000 + ${1-0}))
+    local backend_port=$((5000 + ${1-0}))
+    local algorithm_edit_port=$((8088 + ${1-0}))
+    local task_center_port=$((6705 + ${1-0}))
+    # sed -i "/algorithm:/!b;n;c\ \ \ \ -\ http:\/\/10.0.0.105:${algorithm_port}" configs/config-linux.yaml
+    # sed -i "/algorithm_edit:/!b;n;c\ \ \ \ -\ http:\/\/10.0.0.105:${algorithm_edit_port}" configs/config-linux.yaml
+    # sed -i "/backend:/!b;n;c\ \ \ \ -\ http:\/\/10.0.0.105:${backend_port}" configs/config-linux.yaml
+    # sed -i "/new_task_center:/!b;n;c\ \ \ \ -\ http:\/\/10.0.0.105" configs/config-linux.yaml
+    sed -i -E "s/algorithm: [0-9]+/algorithm: ${algorithm_port}/" configs/config-linux.yaml
+    sed -i -E "s/algorithm_edit: [0-9]+/algorithm_edit: ${algorithm_edit_port}/" configs/config-linux.yaml
+    sed -i -E "s/new_task_center: [0-9]+/new_task_center: ${task_center_port}/" configs/config-linux.yaml
+}
 
 function frontend_repo_handler() {
-    port=$(($1 + 4200))
+    local port=$((${1-0} + 4200))
     if sed -n "/start:local_backend/p" package.json | grep -q "port"; then
         sed -i -E "/start:local_backend/s/--port *[0-9]+/--port ${port}/" package.json
     else
@@ -146,39 +149,36 @@ function frontend_repo_handler() {
     fi
     # TODO: change local backend environment file
     if $?; then
-        echo "[frontend] done"
+        echo "[frontend] port change to ${port}"
     else
         echo "[frontend] fail"
     fi
 }
 
 
-# function port() {
-#     local port_offset=${1-0}
+function port() {
+    local port_offset=${1-0}
 
-#     local dir=${2-.}
-#     cd "$dir" || exit
+    local dir=${2-.}
+    cd "$dir" || exit
 
-#     for repo in "${!repos[@]}"; do (
-#         cd "$repo" > /dev/null 2>&1 || exit
-#         case $repo in
-#             solar)
-#                 solar_repo_handler "$port_offset"
-#                 ;;
-#             new_task_center)
-#                 new_task_center_repo_handler "$port_offset"
-#                 ;;
-#             xkconfig)
-#                 xkconfig_repo_handler "$port_offset"
-#                 ;;
-#             frontend)
-#                 frontend_repo_handler "$port_offset"
-#             *)
-#                 ;;
-#         esac
-#     )
-#     done
-# }
+    for repo in "${!repos[@]}"; do (
+        cd "$repo" > /dev/null 2>&1 || exit
+        case $repo in
+            new_task_center)
+                new_task_center_repo_handler "$port_offset"
+                ;;
+            xkconfig)
+                xkconfig_repo_handler "$port_offset"
+                ;;
+            frontend)
+                frontend_repo_handler "$port_offset"
+            *)
+                ;;
+        esac
+    )
+    done
+}
 
 
 function main() {
@@ -192,6 +192,10 @@ function main() {
             clean "$@"
             ;;
         co)
+            shift
+            checkout "$@"
+            ;;
+        pull)
             shift
             checkout "$@"
             ;;
