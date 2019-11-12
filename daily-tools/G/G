@@ -33,8 +33,16 @@ function clone() {
         if git clone "${repos[${repo}]}" \
             "$repo" --recurse-submodules > /dev/null 2>&1; then
             echo "[$repo] done"
-        else
-            echo "[$repo] fail"
+        else (
+            cd "$repo" || exit
+            if [[ -f "refresh_submodule.sh" ]]; then
+                if bash refresh_submodule.sh > /dev/null 2>&1; then
+                    echo "[$repo] done"
+                else
+                    echo "[$repo] fail"
+                fi
+            fi
+        )
         fi
     done
 }
@@ -138,6 +146,7 @@ function xkconfig_repo_handler() {
     sed -i -E "s/algorithm: [0-9]+/algorithm: ${algorithm_port}/" configs/config-linux.yaml
     sed -i -E "s/algorithm_edit: [0-9]+/algorithm_edit: ${algorithm_edit_port}/" configs/config-linux.yaml
     sed -i -E "s/new_task_center: [0-9]+/new_task_center: ${task_center_port}/" configs/config-linux.yaml
+    echo "[xkconfig] port changed"
 }
 
 function frontend_repo_handler() {
@@ -147,15 +156,15 @@ function frontend_repo_handler() {
     else
         sed -i -e "/start:local_backend/s/\",$/ --port ${frontend_port}\",/" package.json      
     fi
-    if $?; then
+    if [[ $? -eq 0 ]]; then
         echo "[frontend] port change to ${frontend_port}"
     else
         echo "[frontend] changing fails"
         exit
     fi
     local backend_port=$((${1-0} + 5000))
-    if sed -i -E "/apiUrl/c\  apiUrl:\'http:\/\/10.0.0.105:5000\'," src/environments/environment.local_backend.ts; then
-        echo "[frontend] apiUrl change to ${backend_port}"
+    if sed -i -E "/apiUrl/c\  apiUrl:\'http:\/\/${host}:${backend_port}\'," src/environments/environment.local_backend.ts; then
+        echo "[frontend] apiUrl change to ${host}:${backend_port}"
     else
         echo "[frontend] apiUrl changing fails"
     fi
@@ -205,6 +214,10 @@ function main() {
         pull)
             shift
             checkout "$@"
+            ;;
+        port)
+            shift
+            port "$@"
             ;;
         *)
             echo 'Unknown command'
