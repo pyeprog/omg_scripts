@@ -122,9 +122,9 @@ function checkout() { # abbreivation for shortcut
     done
 }
 
-function new_task_center_repo_handler() {
+# function new_task_center_repo_handler() {
 
-}
+# }
 
 function xkconfig_repo_handler() {
     local algorithm_port=$((8000 + ${1-0}))
@@ -141,17 +141,23 @@ function xkconfig_repo_handler() {
 }
 
 function frontend_repo_handler() {
-    local port=$((${1-0} + 4200))
+    local frontend_port=$((${1-0} + 4200))
     if sed -n "/start:local_backend/p" package.json | grep -q "port"; then
-        sed -i -E "/start:local_backend/s/--port *[0-9]+/--port ${port}/" package.json
+        sed -i -E "/start:local_backend/s/--port *[0-9]+/--port ${frontend_port}/" package.json
     else
-        sed -i -e "/start:local_backend/s/\",$/ --port ${port}\",/" package.json      
+        sed -i -e "/start:local_backend/s/\",$/ --port ${frontend_port}\",/" package.json      
     fi
-    # TODO: change local backend environment file
     if $?; then
-        echo "[frontend] port change to ${port}"
+        echo "[frontend] port change to ${frontend_port}"
     else
-        echo "[frontend] fail"
+        echo "[frontend] changing fails"
+        exit
+    fi
+    local backend_port=$((${1-0} + 5000))
+    if sed -i -E "/apiUrl/c\  apiUrl:\'http:\/\/10.0.0.105:5000\'," src/environments/environment.local_backend.ts; then
+        echo "[frontend] apiUrl change to ${backend_port}"
+    else
+        echo "[frontend] apiUrl changing fails"
     fi
 }
 
@@ -165,14 +171,15 @@ function port() {
     for repo in "${!repos[@]}"; do (
         cd "$repo" > /dev/null 2>&1 || exit
         case $repo in
-            new_task_center)
-                new_task_center_repo_handler "$port_offset"
-                ;;
+            # new_task_center)
+            #     new_task_center_repo_handler "$port_offset"
+            #     ;;
             xkconfig)
                 xkconfig_repo_handler "$port_offset"
                 ;;
             frontend)
                 frontend_repo_handler "$port_offset"
+                ;;
             *)
                 ;;
         esac
